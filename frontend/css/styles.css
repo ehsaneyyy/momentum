@@ -1,0 +1,13 @@
+html {
+    scroll-behavior: smooth;
+}
+button {
+    transition: all 0.2s ease;
+}
+@keyframes pulse-slow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.02); }
+}
+.animate-pulse {
+    animation: pulse-slow 3s infinite;
+}
