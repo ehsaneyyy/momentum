@@ -4,25 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Momentum – Spontaneous Connections</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mapbox GL JS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 min-h-screen text-white">
     <div id="app">
+        <!-- Navbar -->
         <nav class="p-6 flex justify-between items-center backdrop-blur-md bg-white/10">
             <h1 class="text-3xl font-bold tracking-tight">Momentum</h1>
-            <button class="px-4 py-2 bg-white/20 rounded-full hover:bg-white/30 transition">Login</button>
+            <div>
+                <span id="userDisplay" class="mr-4"></span>
+                <button id="authBtn" class="px-4 py-2 bg-white/20 rounded-full hover:bg-white/30 transition">Login</button>
+            </div>
         </nav>
+
         <main class="container mx-auto p-6">
-            <div class="text-center mt-20">
+            <!-- Hero + Create Event -->
+            <div class="text-center mt-10">
                 <h2 class="text-5xl font-extrabold mb-4 animate-pulse">Seize the Moment</h2>
                 <p class="text-xl mb-8">Create or join spontaneous events, right now.</p>
-                <button class="px-8 py-3 bg-pink-500 rounded-full text-lg font-semibold hover:bg-pink-600 transform hover:scale-105 transition">Create an Event</button>
+                <button id="createEventBtn" class="px-8 py-3 bg-pink-500 rounded-full text-lg font-semibold hover:bg-pink-600 transform hover:scale-105 transition">+ Create an Event</button>
             </div>
+
+            <!-- Events List -->
             <div id="events-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12"></div>
         </main>
     </div>
 
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 w-96 text-gray-900">
+            <h2 class="text-2xl font-bold mb-4">Login</h2>
+            <input type="text" id="loginUsername" placeholder="Username" class="w-full p-2 border rounded mb-2">
+            <input type="password" id="loginPassword" placeholder="Password" class="w-full p-2 border rounded mb-4">
+            <button id="loginBtn" class="w-full bg-pink-500 text-white py-2 rounded">Login</button>
+            <p class="mt-4 text-center">No account? <a href="#" id="showSignup" class="text-pink-500">Sign up</a></p>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-8 w-96 text-gray-900">
+            <h2 class="text-2xl font-bold mb-4">Sign Up</h2>
+            <input type="email" id="signupEmail" placeholder="Email" class="w-full p-2 border rounded mb-2">
+            <input type="text" id="signupUsername" placeholder="Username" class="w-full p-2 border rounded mb-2">
+            <input type="password" id="signupPassword" placeholder="Password" class="w-full p-2 border rounded mb-4">
+            <button id="signupBtn" class="w-full bg-pink-500 text-white py-2 rounded">Sign Up</button>
+            <p class="mt-4 text-center">Already have an account? <a href="#" id="showLogin" class="text-pink-500">Login</a></p>
+        </div>
+    </div>
+
+    <!-- Create Event Modal (with map) -->
+    <div id="createEventModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 overflow-y-auto">
+        <div class="bg-white rounded-xl p-8 w-full max-w-2xl text-gray-900 m-4">
+            <h2 class="text-2xl font-bold mb-4">Create New Event</h2>
+            <input type="text" id="eventTitle" placeholder="Title" class="w-full p-2 border rounded mb-2">
+            <textarea id="eventDesc" placeholder="Description" class="w-full p-2 border rounded mb-2"></textarea>
+            <input type="text" id="eventLocation" placeholder="Location name (e.g., Central Park)" class="w-full p-2 border rounded mb-2">
+            <div id="map" style="height: 300px; margin-bottom: 1rem;" class="rounded"></div>
+            <input type="number" id="eventMaxPart" placeholder="Max participants" value="10" class="w-full p-2 border rounded mb-2">
+            <label class="inline-flex items-center mb-4">
+                <input type="checkbox" id="eventPrivate" class="mr-2"> Private event
+            </label>
+            <div class="flex gap-2">
+                <button id="submitEventBtn" class="flex-1 bg-pink-500 text-white py-2 rounded">Create</button>
+                <button id="cancelEventBtn" class="flex-1 bg-gray-500 text-white py-2 rounded">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal (when clicking on an event) -->
+    <div id="chatModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl w-full max-w-lg text-gray-900 flex flex-col" style="height: 500px;">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 id="chatEventTitle" class="font-bold text-lg">Chat</h3>
+                <button id="closeChatBtn" class="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+            <div class="p-4 border-t flex gap-2">
+                <input type="text" id="chatInput" placeholder="Type a message..." class="flex-1 p-2 border rounded">
+                <button id="sendChatBtn" class="bg-pink-500 text-white px-4 py-2 rounded">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js Background -->
     <script type="importmap">
         {
             "imports": {
