@@ -3,25 +3,28 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers import events, users
 from . import models, database
 
+# Create database tables (if not exist)
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Momentum API")
 
+# CORS – allow frontend origin (http://localhost:3000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],   # your React/Vite frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Include routers
 app.include_router(events.router)
 app.include_router(users.router)
 
-# WebSocket manager for chat
+# WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: dict[int, list[WebSocket]] = {}  # event_id -> list of websockets
+        self.active_connections: dict[int, list[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, event_id: int):
         await websocket.accept()
@@ -40,17 +43,29 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+# WebSocket endpoint for event chat
 @app.websocket("/ws/chat/{event_id}")
 async def websocket_chat(websocket: WebSocket, event_id: int):
     await manager.connect(websocket, event_id)
+    # Optionally send previous chat messages (implement if needed)
+    db = database.SessionLocal()
+    # Load last 20 messages from ChatMessage table
+    past_messages = db.query(models.ChatMessage).filter(
+        models.ChatMessage.event_id == event_id
+    ).order_by(models.ChatMessage.timestamp.desc()).limit(20).all()
+    for msg in reversed(past_messages):
+        await websocket.send_text(f"[{msg.timestamp.strftime('%H:%M')}] {msg.user.username}: {msg.message}")
+    db.close()
+
     try:
         while True:
             data = await websocket.receive_text()
-            # In production, you'd save the message to the database here
+            # Broadcast to all clients in the same event room
             await manager.broadcast(event_id, data)
+            # (Optional: save message to database here, but frontend also sends via REST)
     except WebSocketDisconnect:
         manager.disconnect(websocket, event_id)
-        await manager.broadcast(event_id, f"User left chat")
+        await manager.broadcast(event_id, "A user left the chat")
 
 @app.get("/")
 def root():

@@ -1,0 +1,30 @@
+{
+  "name": "momentum-frontend",
+  "version": "1.0.0",
+  "description": "Modern event-driven web application for spontaneous social connections",
+  "type": "module",
+  "scripts": {
+    "dev": "python -m http.server 8080",
+    "dev:npm": "npx http-server",
+    "serve": "npx serve",
+    "lint": "npx eslint js/**/*.js",
+    "format": "npx prettier --write js/**/*.js css/**/*.css index.html"
+  },
+  "keywords": [
+    "events",
+    "social",
+    "real-time",
+    "websocket",
+    "mapbox"
+  ],
+  "author": "Momentum Team",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "tailwindcss": "^4.2.2"
+  },
+  "dependencies": {
+    "three": "^0.128.0"
+  }
+}

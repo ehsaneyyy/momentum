@@ -45,5 +45,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=schemas.UserResponse)
-def read_users_me(current_user = Depends(auth.get_current_user)):
+def get_current_user(current_user = Depends(auth.get_current_user)):
     return current_user
+
+@router.get("/me/joined-events")
+def get_joined_events(db: Session = Depends(get_db), current_user = Depends(auth.get_current_user)):
+    participant_events = db.query(models.Event).join(models.EventParticipant).filter(models.EventParticipant.user_id == current_user.id).all()
+    return participant_events

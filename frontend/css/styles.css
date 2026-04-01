@@ -1,13 +1,17 @@
-html {
-    scroll-behavior: smooth;
+/* Minimal CSS for Momentum */
+.event-card {
+    cursor: pointer;
 }
-button {
-    transition: all 0.2s ease;
+
+.event-card-joined {
+    border-left: 4px solid #10b981;
 }
-@keyframes pulse-slow {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.9; transform: scale(1.02); }
+
+.bounce {
+    animation: bounce 0.3s ease-in-out;
 }
-.animate-pulse {
-    animation: pulse-slow 3s infinite;
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
 }

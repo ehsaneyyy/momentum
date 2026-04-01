@@ -4,101 +4,185 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Momentum – Spontaneous Connections</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Mapbox GL JS -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'></text></svg>">
 </head>
 <body class="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 min-h-screen text-white">
     <div id="app">
-        <!-- Navbar -->
         <nav class="p-6 flex justify-between items-center backdrop-blur-md bg-white/10">
-            <h1 class="text-3xl font-bold tracking-tight">Momentum</h1>
+            <h1 class="text-3xl font-bold tracking-tight cursor-pointer" id="logo">Momentum</h1>
             <div>
                 <span id="userDisplay" class="mr-4"></span>
+                <button id="profileBtn" class="mr-2 px-4 py-2 bg-white/20 rounded-full hover:bg-white/30 transition" aria-label="Profile" style="display: none;">👤</button>
                 <button id="authBtn" class="px-4 py-2 bg-white/20 rounded-full hover:bg-white/30 transition">Login</button>
             </div>
         </nav>
 
-        <main class="container mx-auto p-6">
-            <!-- Hero + Create Event -->
-            <div class="text-center mt-10">
-                <h2 class="text-5xl font-extrabold mb-4 animate-pulse">Seize the Moment</h2>
-                <p class="text-xl mb-8">Create or join spontaneous events, right now.</p>
-                <button id="createEventBtn" class="px-8 py-3 bg-pink-500 rounded-full text-lg font-semibold hover:bg-pink-600 transform hover:scale-105 transition">+ Create an Event</button>
-            </div>
-
-            <!-- Events List -->
-            <div id="events-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12"></div>
-        </main>
+        <main id="mainContent" class="container mx-auto p-6"></main>
     </div>
 
     <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-8 w-96 text-gray-900">
-            <h2 class="text-2xl font-bold mb-4">Login</h2>
-            <input type="text" id="loginUsername" placeholder="Username" class="w-full p-2 border rounded mb-2">
-            <input type="password" id="loginPassword" placeholder="Password" class="w-full p-2 border rounded mb-4">
-            <button id="loginBtn" class="w-full bg-pink-500 text-white py-2 rounded">Login</button>
-            <p class="mt-4 text-center">No account? <a href="#" id="showSignup" class="text-pink-500">Sign up</a></p>
+    <div id="loginModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50" role="dialog" aria-labelledby="loginTitle" aria-modal="true">
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 w-96 text-white modal-content shadow-lg">
+            <h2 id="loginTitle" class="text-2xl font-bold mb-4">Login</h2>
+            <form id="loginForm" onsubmit="event.preventDefault(); document.getElementById('loginBtn').click();">
+                <input type="text" id="loginUsername" placeholder="Username" class="w-full p-2 border border-white/20 rounded mb-2 bg-white/10 text-white placeholder-white/50" required aria-label="Username">
+                <input type="password" id="loginPassword" placeholder="Password" class="w-full p-2 border border-white/20 rounded mb-4 bg-white/10 text-white placeholder-white/50" required aria-label="Password">
+                <button type="button" id="loginBtn" class="w-full bg-pink-500 text-white py-2 rounded hover:bg-pink-600 transition font-semibold">Login</button>
+            </form>
+            <p class="mt-4 text-center text-white/80">No account? <a href="#" id="showSignup" class="text-pink-400 hover:text-pink-300 hover:underline">Sign up</a></p>
         </div>
     </div>
 
     <!-- Signup Modal -->
-    <div id="signupModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-8 w-96 text-gray-900">
-            <h2 class="text-2xl font-bold mb-4">Sign Up</h2>
-            <input type="email" id="signupEmail" placeholder="Email" class="w-full p-2 border rounded mb-2">
-            <input type="text" id="signupUsername" placeholder="Username" class="w-full p-2 border rounded mb-2">
-            <input type="password" id="signupPassword" placeholder="Password" class="w-full p-2 border rounded mb-4">
-            <button id="signupBtn" class="w-full bg-pink-500 text-white py-2 rounded">Sign Up</button>
-            <p class="mt-4 text-center">Already have an account? <a href="#" id="showLogin" class="text-pink-500">Login</a></p>
+    <div id="signupModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50" role="dialog" aria-labelledby="signupTitle" aria-modal="true">
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 w-96 text-white modal-content shadow-lg">
+            <h2 id="signupTitle" class="text-2xl font-bold mb-4">Sign Up</h2>
+            <form id="signupForm" onsubmit="event.preventDefault(); document.getElementById('signupBtn').click();">
+                <input type="email" id="signupEmail" placeholder="Email" class="w-full p-2 border border-white/20 rounded mb-2 bg-white/10 text-white placeholder-white/50" required aria-label="Email">
+                <input type="text" id="signupUsername" placeholder="Username" class="w-full p-2 border border-white/20 rounded mb-2 bg-white/10 text-white placeholder-white/50" required aria-label="Username">
+                <input type="password" id="signupPassword" placeholder="Password" class="w-full p-2 border border-white/20 rounded mb-4 bg-white/10 text-white placeholder-white/50" required aria-label="Password">
+                <button type="button" id="signupBtn" class="w-full bg-pink-500 text-white py-2 rounded hover:bg-pink-600 transition font-semibold">Sign Up</button>
+            </form>
+            <p class="mt-4 text-center text-white/80">Already have an account? <a href="#" id="showLogin" class="text-pink-400 hover:text-pink-300 hover:underline">Login</a></p>
         </div>
     </div>
 
-    <!-- Create Event Modal (with map) -->
-    <div id="createEventModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-xl p-8 w-full max-w-2xl text-gray-900 m-4">
-            <h2 class="text-2xl font-bold mb-4">Create New Event</h2>
-            <input type="text" id="eventTitle" placeholder="Title" class="w-full p-2 border rounded mb-2">
-            <textarea id="eventDesc" placeholder="Description" class="w-full p-2 border rounded mb-2"></textarea>
-            <input type="text" id="eventLocation" placeholder="Location name (e.g., Central Park)" class="w-full p-2 border rounded mb-2">
-            <div id="map" style="height: 300px; margin-bottom: 1rem;" class="rounded"></div>
-            <input type="number" id="eventMaxPart" placeholder="Max participants" value="10" class="w-full p-2 border rounded mb-2">
-            <label class="inline-flex items-center mb-4">
-                <input type="checkbox" id="eventPrivate" class="mr-2"> Private event
-            </label>
-            <div class="flex gap-2">
-                <button id="submitEventBtn" class="flex-1 bg-pink-500 text-white py-2 rounded">Create</button>
-                <button id="cancelEventBtn" class="flex-1 bg-gray-500 text-white py-2 rounded">Cancel</button>
+    <!-- Create Event Modal -->
+    <div id="createEventModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50" role="dialog" aria-labelledby="createEventTitle" aria-modal="true">
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 w-full max-w-2xl text-white m-4 modal-content shadow-lg overflow-y-auto max-h-[80vh]">
+            <h2 id="createEventTitle" class="text-2xl font-bold mb-4">Create New Event</h2>
+            <form id="createEventForm" onsubmit="event.preventDefault(); document.getElementById('submitEventBtn').click();">
+                <label for="eventTitle" class="block text-sm font-medium mb-1">Event Title *</label>
+                <input type="text" id="eventTitle" placeholder="What's the event about?" class="w-full p-2 border border-white/20 rounded mb-3 bg-white/10 text-white placeholder-white/50" required aria-label="Event title">
+                
+                <label for="eventDesc" class="block text-sm font-medium mb-1">Description *</label>
+                <textarea id="eventDesc" placeholder="Describe the event in detail..." class="w-full p-2 border border-white/20 rounded mb-3 resize-none bg-white/10 text-white placeholder-white/50" rows="4" required aria-label="Event description"></textarea>
+                
+                <label for="eventLocation" class="block text-sm font-medium mb-1">Location Name *</label>
+                <input type="text" id="eventLocation" placeholder="Where is it happening?" class="w-full p-2 border border-white/20 rounded mb-3 bg-white/10 text-white placeholder-white/50" required aria-label="Location name">
+                
+                <label class="block text-sm font-medium mb-2">Select Location on Map</label>
+                <div id="map" style="height: 300px;" class="rounded border border-white/20 mb-3"></div>
+                
+                <label for="eventMaxPart" class="block text-sm font-medium mb-1">Max Participants (1-1000) *</label>
+                <input type="number" id="eventMaxPart" placeholder="Maximum number of participants" value="10" min="1" max="1000" class="w-full p-2 border border-white/20 rounded mb-3 bg-white/10 text-white placeholder-white/50" required aria-label="Maximum participants">
+                
+                <label for="eventPrivate" class="inline-flex items-center mb-4">
+                    <input type="checkbox" id="eventPrivate" class="mr-2" aria-label="Make event private">
+                    <span>Private event (invitation only)</span>
+                </label>
+                
+                <div class="flex gap-2">
+                    <button type="button" id="submitEventBtn" class="flex-1 bg-pink-500 text-white py-2 rounded hover:bg-pink-600 transition font-semibold">Create Event</button>
+                    <button type="button" id="cancelEventBtn" class="flex-1 bg-gray-500/50 text-white py-2 rounded hover:bg-gray-600 transition font-semibold">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div id="eventDetailModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50" role="dialog" aria-modal="true">
+        <div class="bg-white/10 backdrop-blur-md rounded-xl w-full max-w-2xl text-white m-4 modal-content shadow-lg flex flex-col max-h-[80vh] overflow-y-auto">
+            <div class="p-6 flex justify-between items-center">
+                <h3 id="detailTitle" class="text-3xl font-bold"></h3>
+                <button id="closeDetailBtn" class="text-white/70 hover:text-white text-3xl" aria-label="Close dialog">✕</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <p id="detailDesc" class="text-lg leading-relaxed"></p>
+                <p id="detailLocation" class="text-md flex items-center"><span class="mr-2">📍</span><span id="detailLocationText"></span></p>
+                <p id="detailTime" class="text-md flex items-center"><span class="mr-2">🕒</span><span id="detailTimeText"></span></p>
+                <p id="detailParticipants" class="text-md flex items-center font-semibold"><span class="mr-2">👥</span><span id="detailParticipantsText"></span></p>
+                
+                <!-- People Joined Section -->
+                <div id="peopleJoinedSection" class="mt-6 pt-4 border-t border-white/20">
+                    <h4 class="text-lg font-semibold mb-3">People Joined</h4>
+                    <div id="peopleList" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                </div>
+                
+                <div class="flex gap-3 mt-6 flex-wrap">
+                    <button id="detailJoinBtn" class="bg-green-500 text-white px-6 py-2 rounded transition transform hover:scale-105 hover:bg-green-600 font-semibold" aria-label="Join this event">Join</button>
+                    <button id="detailLeaveBtn" class="bg-red-500 text-white px-6 py-2 rounded transition transform hover:scale-105 hover:bg-red-600 font-semibold" aria-label="Leave this event">Leave</button>
+                    <button id="detailChatBtn" class="bg-purple-500 text-white px-6 py-2 rounded transition transform hover:scale-105 hover:bg-purple-600 font-semibold" aria-label="Open chat">💬 Chat</button>
+                    <button id="detailEditBtn" class="bg-blue-600 text-white px-6 py-2 rounded hidden transition transform hover:scale-105 hover:bg-blue-700 font-semibold" aria-label="Edit this event">✏️ Edit</button>
+                    <button id="detailDeleteBtn" class="bg-red-700 text-white px-6 py-2 rounded hidden transition transform hover:scale-105 hover:bg-red-800 font-semibold" aria-label="Delete this event">Delete Event</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Chat Modal (when clicking on an event) -->
-    <div id="chatModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl w-full max-w-lg text-gray-900 flex flex-col" style="height: 500px;">
-            <div class="p-4 border-b flex justify-between items-center">
-                <h3 id="chatEventTitle" class="font-bold text-lg">Chat</h3>
-                <button id="closeChatBtn" class="text-gray-500 hover:text-gray-700">✕</button>
+    <!-- Chat Modal -->
+    <div id="chatModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50" role="dialog" aria-modal="true">
+        <div class="bg-white/10 backdrop-blur-md rounded-xl w-full max-w-2xl text-white m-4 modal-content flex flex-col max-h-[80vh] overflow-y-auto shadow-lg">
+            <div class="p-4 border-b border-white/20 flex justify-between items-center">
+                <h3 id="chatEventTitle" class="text-2xl font-bold"></h3>
+                <button id="closeChatBtn" class="text-white/70 hover:text-white text-2xl" aria-label="Close chat">✕</button>
             </div>
-            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
-            <div class="p-4 border-t flex gap-2">
-                <input type="text" id="chatInput" placeholder="Type a message..." class="flex-1 p-2 border rounded">
-                <button id="sendChatBtn" class="bg-pink-500 text-white px-4 py-2 rounded">Send</button>
+            <div class="p-4 flex-1 overflow-hidden flex flex-col">
+                <div id="chatMessages" class="flex-1 overflow-y-auto border border-white/20 rounded p-3 bg-white/5 mb-3 space-y-2" role="log" aria-label="Chat messages" aria-live="polite"></div>
+                <div class="flex gap-2">
+                    <input type="text" id="chatInput" placeholder="Type a message..." class="flex-1 p-2 border border-white/20 rounded bg-white/10 text-white placeholder-white/50" aria-label="Chat message input">
+                    <button id="chatSendBtn" class="bg-blue-500 text-white px-4 py-2 rounded transition transform hover:scale-105 hover:bg-blue-600" aria-label="Send message">Send</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Three.js Background -->
+    <!-- Profile Modal -->
+    <div id="profileModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50" role="dialog" aria-modal="true">
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 w-96 text-white modal-content shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Profile</h2>
+                <button id="closeProfileBtn" class="text-white/70 hover:text-white text-2xl" aria-label="Close profile">✕</button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-white/70">Username</p>
+                    <p id="profileUsername" class="text-xl font-semibold"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-white/70">Email</p>
+                    <p id="profileEmail" class="text-xl font-semibold"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Event Modal -->
+    <div id="editEventModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50" role="dialog" aria-labelledby="editEventTitle" aria-modal="true">
+        <div class="bg-white/10 backdrop-blur-md rounded-xl p-8 w-full max-w-2xl text-white m-4 modal-content shadow-lg overflow-y-auto max-h-[80vh]">
+            <h2 id="editEventTitle" class="text-2xl font-bold mb-4">Edit Event</h2>
+            <form id="editEventForm" onsubmit="event.preventDefault(); document.getElementById('saveEditEventBtn').click();">
+                <label for="editEventTitle2" class="block text-sm font-medium mb-1">Event Title</label>
+                <input type="text" id="editEventTitle2" placeholder="Event title" class="w-full p-2 border border-white/20 rounded mb-3 bg-white/10 text-white placeholder-white/50" required aria-label="Event title">
+                
+                <label for="editEventDesc" class="block text-sm font-medium mb-1">Description</label>
+                <textarea id="editEventDesc" placeholder="Event description" class="w-full p-2 border border-white/20 rounded mb-3 resize-none bg-white/10 text-white placeholder-white/50" rows="4" required aria-label="Event description"></textarea>
+                
+                <label for="editEventLocation" class="block text-sm font-medium mb-1">Location</label>
+                <input type="text" id="editEventLocation" placeholder="Location" class="w-full p-2 border border-white/20 rounded mb-3 bg-white/10 text-white placeholder-white/50" required aria-label="Location">
+                
+                <label for="editEventMaxPart" class="block text-sm font-medium mb-1">Max Participants</label>
+                <input type="number" id="editEventMaxPart" placeholder="Max participants" min="1" max="1000" class="w-full p-2 border border-white/20 rounded mb-3 bg-white/10 text-white placeholder-white/50" required aria-label="Max participants">
+                
+                <div class="flex gap-2">
+                    <button type="button" id="saveEditEventBtn" class="flex-1 bg-pink-500 text-white py-2 rounded hover:bg-pink-600 transition font-semibold">Save Changes</button>
+                    <button type="button" id="cancelEditEventBtn" class="flex-1 bg-gray-500/50 text-white py-2 rounded hover:bg-gray-600 transition font-semibold">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
-            }
+        { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
+    </script>
+    <script>
+        window.MAPBOX_TOKEN = 'YOUR_MAPBOX_TOKEN_HERE';
+        if (typeof mapboxgl !== 'undefined') {
+            mapboxgl.accessToken = window.MAPBOX_TOKEN;
         }
     </script>
     <script type="module" src="js/main.js"></script>
