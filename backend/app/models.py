@@ -7,6 +7,10 @@ from datetime import datetime
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    age = Column(Integer, nullable=True)
+    gender = Column(String, nullable=True)
     email = Column(String, unique=True, index=True)
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
@@ -30,6 +34,7 @@ class Event(Base):
     creator_id = Column(Integer, ForeignKey("users.id"))
     max_participants = Column(Integer, default=10)
     is_private = Column(Boolean, default=False)
+    invite_code = Column(String, unique=True, nullable=True)
 
     creator = relationship("User", back_populates="events_created")
     participants = relationship("EventParticipant", back_populates="event")

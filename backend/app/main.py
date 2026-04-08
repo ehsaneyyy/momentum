@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import events, users
@@ -8,16 +9,14 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Momentum API")
 
-# CORS – allow frontend origin (http://localhost:3000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],   # your React/Vite frontend
+    allow_origins=["http://localhost:3000"],  # or ["*"] for testing
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
 app.include_router(events.router)
 app.include_router(users.router)
 
@@ -54,7 +53,11 @@ async def websocket_chat(websocket: WebSocket, event_id: int):
         models.ChatMessage.event_id == event_id
     ).order_by(models.ChatMessage.timestamp.desc()).limit(20).all()
     for msg in reversed(past_messages):
-        await websocket.send_text(f"[{msg.timestamp.strftime('%H:%M')}] {msg.user.username}: {msg.message}")
+        await websocket.send_text(json.dumps({
+            "user": {"username": msg.user.username},
+            "message": msg.message,
+            "timestamp": msg.timestamp.isoformat()
+        }))
     db.close()
 
     try:

@@ -1,17 +1,283 @@
-/* Minimal CSS for Momentum */
+/* =================================
+   Momentum – Professional UI Styles
+   ================================= */
+
+/* Base */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar (optional) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(20, 184, 166, 0.6);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #14b8a6;
+}
+
+/* Pulse animation for hero text */
+@keyframes pulse-slow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.02); }
+}
+.animate-pulse {
+    animation: pulse-slow 3s infinite;
+}
+
+/* Event card */
 .event-card {
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.5rem;
+}
+.event-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.4);
+    border-color: rgba(20, 184, 166, 0.3);
 }
 
+/* Joined card style – teal glow */
 .event-card-joined {
-    border-left: 4px solid #10b981;
+    border: 2px solid #14b8a6;
+    box-shadow: 0 0 20px rgba(20, 184, 166, 0.4);
+    animation: pulseGlow 0.6s ease-out;
 }
 
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(20, 184, 166, 0);
+        border-color: rgba(20, 184, 166, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 25px 5px rgba(20, 184, 166, 0.6);
+        border-color: #14b8a6;
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(20, 184, 166, 0.4);
+        border-color: #14b8a6;
+    }
+}
+
+/* Bounce animation for chat messages */
 .bounce {
-    animation: bounce 0.3s ease-in-out;
+    animation: bounce 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
-
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
+}
+
+/* Fade-out for event deletion */
+.fade-out {
+    animation: fadeOut 0.3s forwards;
+}
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+        display: none;
+    }
+}
+
+/* Optional: Enhance modal content (already using Tailwind, but add smooth transitions) */
+.modal-content {
+    transition: all 0.2s ease;
+}
+
+/* Waving hand animation */
+.wave-emoji {
+    display: inline-block;
+    animation: wave 1.2s infinite ease-in-out;
+    transform-origin: 70% 70%;
+}
+
+@keyframes wave {
+    0% { transform: rotate(0deg); }
+    20% { transform: rotate(-10deg); }
+    40% { transform: rotate(10deg); }
+    60% { transform: rotate(-5deg); }
+    80% { transform: rotate(5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Gentle float for the heading */
+@keyframes gentleFloat {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0px); }
+}
+.animate-float {
+    animation: gentleFloat 3s ease-in-out infinite;
+}
+
+/* Soft fade-in and slide up for subtext */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.animate-fade-slide {
+    animation: fadeSlideUp 0.8s ease-out forwards;
+}
+
+/* Button gentle pulse on hover (already has scale, add a soft shadow pulse) */
+.create-btn-pulse {
+    transition: all 0.2s ease;
+}
+.create-btn-pulse:hover {
+    animation: softPulse 0.6s ease-in-out;
+}
+@keyframes softPulse {
+    0% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(20, 184, 166, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
+}
+
+/* Place the app UI above the Earth background so the 3D canvas can remain interactive behind it */
+#app {
+    position: relative;
+    z-index: 1;
+}
+
+/* Disable text selection globally */
+* {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Allow selection on input fields (so users can still type) */
+input, textarea, [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+/* Toast notification (centred, above content) */
+.toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 40px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: fadeInOut 3s ease forwards;
+    pointer-events: none;
+    border: 4px solid;
+}
+.toast.error {
+    border-color: #ef4444;
+    background: rgba(239,68,68,0.2);
+    color: #fee2e2;
+    animation: fadeInOut 3s ease forwards, errorPulse 0.6s ease-out 0.1s;
+}
+.toast.success {
+    border-color: #14b8a6;
+    background: rgba(20,184,166,0.2);
+    color: #ccfbf1;
+}
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px) scale(0.95);
+    }
+    10% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+    90% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-5px) scale(0.98);
+        visibility: hidden;
+    }
+}
+@keyframes errorPulse {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+.floating-location-filter {
+    position: sticky;
+    top: 20px;
+    z-index: 20;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;          /* less rounded than 60px */
+    padding: 12px 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.floating-location-filter:hover {
+    box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+    border-color: rgba(20,184,166,0.5);
+    transform: scale(1.01);       /* subtle grow on hover */
+}
+
+.filter-btn-active {
+    background-color: #14b8a6 !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(20,184,166,0.3);
+}
+
+/* Ensure Earth canvas gets all mouse/touch events */
+#earthContainer {
+    pointer-events: auto !important;
+    touch-action: none;
+}
+
+/* UI overlay elements should be clickable but not block the canvas */
+#app, .modal-content, button, input, textarea, .floating-location-filter, .event-card {
+    pointer-events: auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Prevent the body from blocking the canvas */
+body > div:not(#earthContainer):not(#app) {
+    pointer-events: none;
 }
