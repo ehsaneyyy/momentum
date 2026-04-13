@@ -442,17 +442,11 @@ async function loadEventDetail(eventId) {
     const leaveBtn = document.getElementById('detailLeaveBtn');
 
     if (userAlreadyJoined || isHost) {
-        joinBtn.classList.add('hidden');
-        leaveBtn.classList.remove('hidden');
+        joinBtn.style.display = 'none';
+        leaveBtn.style.display = 'inline-block';
     } else {
-        joinBtn.classList.remove('hidden');
-        leaveBtn.classList.add('hidden');
-    }
-
-    // Also handle private event join button visibility
-    if (event.is_private && !userAlreadyJoined && !isHost) {
-        joinBtn.classList.remove('hidden');
-        leaveBtn.classList.add('hidden');
+        joinBtn.style.display = 'inline-block';
+        leaveBtn.style.display = 'none';
     }
 
     joinBtn.dataset.isPrivate = event.is_private ? 'true' : 'false';
@@ -497,11 +491,11 @@ async function loadRecommendations() {
         const recs = await res.json();
         const section = document.getElementById('recommendations-section');
         const container = document.getElementById('recommended-events-list');
+        if (section) section.classList.remove('hidden');
         if (!recs.length) {
-            if (section) section.classList.add('hidden');
+            container.innerHTML = '<div class="col-span-full text-center text-white/70">No upcoming events yet. Create or join one!</div>';
             return;
         }
-        if (section) section.classList.remove('hidden');
         if (container) {
             container.innerHTML = recs.map(event => `
                 <div class="bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-md rounded-xl p-5 shadow-lg event-card cursor-pointer" data-id="${event.id}">
@@ -589,7 +583,6 @@ async function loadEvents(center = null) {
             document.getElementById('eventDetailModal').classList.remove('hidden');
         };
     });
-    // Refresh recommendations after events update
     await loadRecommendations();
 }
 
