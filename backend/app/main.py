@@ -9,9 +9,14 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Momentum API")
 
+# origins = [
+#     "http://localhost:3000",  
+#     "https://your-frontend.vercel.app",
+# ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # or ["*"] for testing
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,6 +24,7 @@ app.add_middleware(
 
 app.include_router(events.router)
 app.include_router(users.router)
+
 
 # WebSocket connection manager
 class ConnectionManager:
@@ -40,7 +46,9 @@ class ConnectionManager:
             for connection in self.active_connections[event_id]:
                 await connection.send_text(message)
 
+
 manager = ConnectionManager()
+
 
 # WebSocket endpoint for event chat
 @app.websocket("/ws/chat/{event_id}")
@@ -49,15 +57,23 @@ async def websocket_chat(websocket: WebSocket, event_id: int):
     # Optionally send previous chat messages (implement if needed)
     db = database.SessionLocal()
     # Load last 20 messages from ChatMessage table
-    past_messages = db.query(models.ChatMessage).filter(
-        models.ChatMessage.event_id == event_id
-    ).order_by(models.ChatMessage.timestamp.desc()).limit(20).all()
+    past_messages = (
+        db.query(models.ChatMessage)
+        .filter(models.ChatMessage.event_id == event_id)
+        .order_by(models.ChatMessage.timestamp.desc())
+        .limit(20)
+        .all()
+    )
     for msg in reversed(past_messages):
-        await websocket.send_text(json.dumps({
-            "user": {"username": msg.user.username},
-            "message": msg.message,
-            "timestamp": msg.timestamp.isoformat()
-        }))
+        await websocket.send_text(
+            json.dumps(
+                {
+                    "user": {"username": msg.user.username},
+                    "message": msg.message,
+                    "timestamp": msg.timestamp.isoformat(),
+                }
+            )
+        )
     db.close()
 
     try:
@@ -69,6 +85,7 @@ async def websocket_chat(websocket: WebSocket, event_id: int):
     except WebSocketDisconnect:
         manager.disconnect(websocket, event_id)
         await manager.broadcast(event_id, "A user left the chat")
+
 
 @app.get("/")
 def root():

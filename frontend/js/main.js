@@ -164,7 +164,7 @@ controls.enablePan = false;
 controls.target.set(0, 0, 0);
 controls.autoRotate = true;
 controls.autoRotateSpeed = 1.0;
-controls.enableTouch = true;
+controls.enableTouch = false;   // <-- DISABLED touch interaction
 controls.enabled = true;
 
 let activePin = null;
@@ -240,9 +240,6 @@ function flyToLocation(lat, lon) {
 
 function resetEarthView() {
     if (flyAnimation) cancelAnimationFrame(flyAnimation);
-    camera.position.set(0, 0, 8);
-    controls.target.set(0, 0, 0);
-    controls.update();
     controls.autoRotate = true;
     if (activePin) earthGroup.remove(activePin);
     activePin = null;
