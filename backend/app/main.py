@@ -1,7 +1,7 @@
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import events, users, recommendations 
+from .routers import events, users, recommendations
 from . import models, database
 
 # Create database tables (if not exist)
@@ -9,14 +9,13 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="Momentum API")
 
-# origins = [
-#     "http://localhost:3000",  
-#     "https://your-frontend.vercel.app",
-# ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://momentum-eight-sigma.vercel.app",
+        "http://localhost:3000"
+        ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,7 +24,6 @@ app.add_middleware(
 app.include_router(events.router)
 app.include_router(users.router)
 app.include_router(recommendations.router)
-
 
 
 # WebSocket connection manager
