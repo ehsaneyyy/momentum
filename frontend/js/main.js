@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-loginBtn
+
 function showToast(message, type = 'error') {
     const oldToast = document.querySelector('.toast');
     if (oldToast) oldToast.remove();
@@ -164,7 +164,7 @@ controls.enablePan = false;
 controls.target.set(0, 0, 0);
 controls.autoRotate = true;
 controls.autoRotateSpeed = 1.0;
-controls.enableTouch = false;   // <-- DISABLED touch interaction
+controls.enableTouch = false;
 controls.enabled = true;
 
 let activePin = null;
@@ -409,7 +409,6 @@ async function loadEventDetail(eventId) {
     document.getElementById('detailTime').innerText = `🕒 ${new Date(event.time).toLocaleString()}`;
     document.getElementById('detailParticipants').innerText = `👥 ${event.participants_count || 0}/${event.max_participants}`;
 
-    // Determine if current user is the creator
     const isHost = currentUser && (event.creator_id === currentUser.id);
     console.log("isHost:", isHost, "event.creator_id:", event.creator_id, "currentUser.id:", currentUser?.id);
 
@@ -421,7 +420,6 @@ async function loadEventDetail(eventId) {
         document.getElementById('detailDeleteBtn').classList.add('hidden');
     }
 
-    // Load participants
     const participantsRes = await apiFetch(getApiUrl(`/events/${eventId}/participants`));
     if (participantsRes.ok) {
         const participants = await participantsRes.json();
@@ -431,7 +429,6 @@ async function loadEventDetail(eventId) {
             const div = document.createElement('div');
             div.className = 'flex justify-between items-center p-2 bg-white/5 rounded';
             const fullName = person.first_name || person.last_name ? `${person.first_name || ''} ${person.last_name || ''}`.trim() : person.username;
-            // Only show remove button if current user is host
             div.innerHTML = `
                 <span>${fullName}</span>
                 ${isHost ? `<button class="remove-person-btn bg-red-500/70 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition" data-username="${person.username}">Remove</button>` : ''}
@@ -474,6 +471,41 @@ async function loadChatModal(eventId) {
             chatContainer.scrollTop = chatContainer.scrollHeight;
         } catch (err) { console.error('Failed to parse chat message', err); }
     };
+}
+
+async function loadRecommendations() {
+    if (!token || !currentUser) return;
+    try {
+        const res = await apiFetch(getApiUrl('/recommendations/events'));
+        if (!res.ok) return;
+        const recs = await res.json();
+        const section = document.getElementById('recommendations-section');
+        const container = document.getElementById('recommended-events-list');
+        if (!recs.length) {
+            if (section) section.classList.add('hidden');
+            return;
+        }
+        if (section) section.classList.remove('hidden');
+        if (container) {
+            container.innerHTML = recs.map(event => `
+                <div class="bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-md rounded-xl p-5 shadow-lg event-card cursor-pointer" data-id="${event.id}">
+                    <h3 class="text-2xl font-bold">${event.title}</h3>
+                    <p class="mt-2">${event.description.substring(0, 100)}...</p>
+                    <p class="mt-2 text-sm">📍 ${event.location}</p>
+                    <p class="mt-2 text-sm">👥 ${event.participants_count}/${event.max_participants}</p>
+                </div>
+            `).join('');
+            document.querySelectorAll('#recommended-events-list .event-card').forEach(card => {
+                card.onclick = () => {
+                    const eventId = parseInt(card.dataset.id);
+                    loadEventDetail(eventId);
+                    document.getElementById('eventDetailModal').classList.remove('hidden');
+                };
+            });
+        }
+    } catch (err) {
+        console.error('Failed to load recommendations:', err);
+    }
 }
 
 async function loadEvents(center = null) {
@@ -541,6 +573,8 @@ async function loadEvents(center = null) {
             document.getElementById('eventDetailModal').classList.remove('hidden');
         };
     });
+    // Refresh recommendations after events update
+    await loadRecommendations();
 }
 
 document.getElementById('loginBtn').onclick = async () => {
@@ -558,12 +592,12 @@ document.getElementById('loginBtn').onclick = async () => {
         const userRes = await apiFetch(getApiUrl('/users/me'));
         if (userRes.ok) {
             currentUser = await userRes.json();
-            console.log("Logged in user:", currentUser); // Debug: check id
+            console.log("Logged in user:", currentUser);
             hideLoginModal();
             updateAuthUI();
-            loadEvents();
+            await loadEvents();
+            await loadRecommendations();
         } else {
-            // If fetching user fails, logout
             localStorage.removeItem('access_token');
             token = null;
             showToast('Could not retrieve user profile. Please try again.', 'error');
@@ -600,6 +634,7 @@ document.getElementById('authBtn').onclick = () => {
         currentUser = null;
         updateAuthUI();
         loadEvents();
+        loadRecommendations();
     } else showLoginModal();
 };
 
@@ -619,7 +654,7 @@ document.getElementById('profileBtn').onclick = () => {
 document.getElementById('closeProfileBtn').onclick = () => document.getElementById('profileModal').classList.add('hidden');
 document.getElementById('showSignup').onclick = (e) => { e.preventDefault(); hideLoginModal(); showSignupModal(); };
 document.getElementById('showLogin').onclick = (e) => { e.preventDefault(); hideSignupModal(); showLoginModal(); };
-document.getElementById('logo').onclick = () => loadEvents();
+document.getElementById('logo').onclick = () => { loadEvents(); loadRecommendations(); };
 document.getElementById('closeDetailBtn').onclick = () => hideEventDetail();
 
 // ---------- Event Creation ----------
@@ -647,7 +682,8 @@ document.getElementById('submitEventBtn').onclick = async () => {
         if (createdEvent.is_private && createdEvent.invite_code) showToast(`Private event created! Invitation code: ${createdEvent.invite_code}`, 'success');
         else showToast('Event created!', 'success');
         hideCreateEventModal();
-        loadEvents();
+        await loadEvents();
+        await loadRecommendations();
     } else {
         const error = await res.json();
         showToast(error.detail || 'Failed to create event', 'error');
@@ -679,17 +715,18 @@ document.getElementById('detailJoinBtn').onclick = async () => {
         if (res.ok) {
             hideEventDetail();
             await loadEvents();
+            await loadRecommendations();
             showToast('Joined private event!', 'success');
         } else {
             const error = await res.json();
             showToast(error.detail || 'Invalid code or join failed', 'error');
         }
     } else {
-        // Public event
         const res = await apiFetch(getApiUrl(`/events/${currentDetailEvent.id}/join`), { method: 'POST' });
         if (res.ok) {
             hideEventDetail();
             await loadEvents();
+            await loadRecommendations();
             showToast('Joined event', 'success');
         } else {
             const error = await res.json();
@@ -704,6 +741,7 @@ document.getElementById('detailLeaveBtn').onclick = async () => {
     if (res.ok) {
         hideEventDetail();
         await loadEvents();
+        await loadRecommendations();
         showToast('Left event', 'success');
     } else {
         const error = await res.json();
@@ -718,6 +756,7 @@ document.getElementById('detailDeleteBtn').onclick = async () => {
         if (res.ok) {
             hideEventDetail();
             await loadEvents();
+            await loadRecommendations();
         } else {
             const error = await res.json();
             showToast(error.detail || 'Delete failed', 'error');
@@ -748,6 +787,7 @@ document.getElementById('saveEditEventBtn').onclick = async () => {
         await loadEvents();
         await loadEventDetail(currentDetailEvent.id);
         document.getElementById('eventDetailModal').classList.remove('hidden');
+        await loadRecommendations();
     } else {
         const error = await res.json();
         showToast(error.detail || 'Update failed', 'error');
@@ -763,6 +803,7 @@ document.addEventListener('click', async (e) => {
         const res = await apiFetch(getApiUrl(`/events/${currentDetailEvent.id}/remove-participant/${username}`), { method: 'POST' });
         if (res.ok) {
             await loadEvents();
+            await loadRecommendations();
             if (currentDetailEvent) await loadEventDetail(currentDetailEvent.id);
         } else showToast('Remove failed', 'error');
     }
@@ -805,6 +846,10 @@ async function init() {
                 <h2 class="text-5xl font-extrabold mb-4 animate-float">Zero Plans? Perfect.</h2>
                 <p class="text-xl mb-8 animate-fade-slide">Join what’s happening nearby, or start your own.</p>
                 <button id="createEventBtn" class="create-btn-pulse px-8 py-3 bg-teal-500 rounded-full text-lg text-teal-100 font-semibold hover:bg-teal-600 transform hover:scale-105 transition">Create an Event</button>
+            </div>
+            <div id="recommendations-section" class="hidden mt-8">
+                <h2 class="text-3xl font-bold mb-4 text-teal-300">🎯 Recommended for You</h2>
+                <div id="recommended-events-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"></div>
             </div>
             <div class="floating-location-filter glass-effect mt-40 mb-6 rounded-3xl max-w-3xl mx-auto">
                 <div class="flex flex-col gap-4">
@@ -869,6 +914,7 @@ async function init() {
         });
     }
     await loadEvents();
+    await loadRecommendations();
 }
 
 init();

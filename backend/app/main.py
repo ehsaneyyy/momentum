@@ -1,7 +1,7 @@
 import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import events, users
+from .routers import events, users, recommendations 
 from . import models, database
 
 # Create database tables (if not exist)
@@ -24,6 +24,8 @@ app.add_middleware(
 
 app.include_router(events.router)
 app.include_router(users.router)
+app.include_router(recommendations.router)
+
 
 
 # WebSocket connection manager
