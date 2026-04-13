@@ -441,7 +441,7 @@ async function loadEventDetail(eventId) {
     const joinBtn = document.getElementById('detailJoinBtn');
     const leaveBtn = document.getElementById('detailLeaveBtn');
 
-    if (userAlreadyJoined || isHost) {
+    if (userAlreadyJoined) {
         joinBtn.style.display = 'none';
         leaveBtn.style.display = 'inline-block';
     } else {
@@ -722,9 +722,11 @@ document.getElementById('detailJoinBtn').onclick = async () => {
             body: JSON.stringify({ code })
         });
         if (res.ok) {
-            hideEventDetail();
             await loadEvents();
             await loadRecommendations();
+            if (currentDetailEvent) {
+                await loadEventDetail(currentDetailEvent.id);
+            }
             showToast('Joined private event!', 'success');
         } else {
             const error = await res.json();
@@ -748,9 +750,12 @@ document.getElementById('detailLeaveBtn').onclick = async () => {
     if (!currentDetailEvent) return;
     const res = await apiFetch(getApiUrl(`/events/${currentDetailEvent.id}/leave`), { method: 'POST' });
     if (res.ok) {
-        hideEventDetail();
-        await loadEvents();
-        await loadRecommendations();
+        // Do NOT close the modal – refresh it instead
+        await loadEvents();                // update global events list
+        await loadRecommendations();       // update recommendations
+        if (currentDetailEvent) {
+            await loadEventDetail(currentDetailEvent.id); // refresh modal with new status
+        }
         showToast('Left event', 'success');
     } else {
         const error = await res.json();
