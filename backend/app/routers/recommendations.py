@@ -20,7 +20,6 @@ def recommend_events(
     # If no history, return popular events
     if not user_joined_ids:
         popular = db.query(models.Event).filter(
-            models.Event.is_active == True,
             models.Event.time > func.now()
         ).order_by(models.Event.participants_count.desc()).limit(10).all()
         return popular
@@ -36,7 +35,6 @@ def recommend_events(
     
     if not similar_users:
         popular = db.query(models.Event).filter(
-            models.Event.is_active == True,
             models.Event.time > func.now()
         ).order_by(models.Event.participants_count.desc()).limit(10).all()
         return popular
@@ -55,7 +53,6 @@ def recommend_events(
     
     if not candidate_events:
         popular = db.query(models.Event).filter(
-            models.Event.is_active == True,
             models.Event.time > func.now()
         ).order_by(models.Event.participants_count.desc()).limit(10).all()
         return popular
