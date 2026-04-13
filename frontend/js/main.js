@@ -439,6 +439,22 @@ async function loadEventDetail(eventId) {
 
     const userAlreadyJoined = userJoinedEvents.has(event.id);
     const joinBtn = document.getElementById('detailJoinBtn');
+    const leaveBtn = document.getElementById('detailLeaveBtn');
+
+    if (userAlreadyJoined || isHost) {
+        joinBtn.classList.add('hidden');
+        leaveBtn.classList.remove('hidden');
+    } else {
+        joinBtn.classList.remove('hidden');
+        leaveBtn.classList.add('hidden');
+    }
+
+    // Also handle private event join button visibility
+    if (event.is_private && !userAlreadyJoined && !isHost) {
+        joinBtn.classList.remove('hidden');
+        leaveBtn.classList.add('hidden');
+    }
+
     joinBtn.dataset.isPrivate = event.is_private ? 'true' : 'false';
     joinBtn.dataset.isHost = isHost ? 'true' : 'false';
     joinBtn.dataset.alreadyJoined = userAlreadyJoined ? 'true' : 'false';
