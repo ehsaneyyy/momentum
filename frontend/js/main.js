@@ -11,8 +11,8 @@ function showToast(message, type = 'error') {
     setTimeout(() => toast.remove(), 3000);
 }
 
-const API_BASE = 'http://localhost:8000';
-const WS_BASE = 'ws://localhost:8000';
+const API_BASE = 'https://momentum-backend-u3tb.onrender.com';
+const WS_BASE = 'wss://momentum-backend-u3tb.onrender.com';
 
 function getApiUrl(endpoint) {
     if (typeof endpoint === 'string') return `${API_BASE}${endpoint}`;
